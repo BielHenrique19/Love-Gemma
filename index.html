@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lojas Oliveira | Ofertas Especiais</title>
+    <title>Minha Loja | Ofertas Especiais</title>
     <style>
         /* Estilos Gerais */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -32,12 +32,19 @@
 
         /* Modal do Carrinho */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 200; }
-        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+        .modal-content { background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1rem; }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0; }
         .remove-btn { color: #dc2626; background: none; border: none; cursor: pointer; font-size: 0.9rem; }
-        .cart-total { font-size: 1.3rem; font-weight: bold; text-align: right; margin: 1.5rem 0; }
+        .cart-total { font-size: 1.3rem; font-weight: bold; text-align: right; margin: 1.2rem 0; }
+
+        /* Formulário de Entrega e Pagamento */
+        .checkout-form { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.2rem; border-top: 1px solid #eee; padding-top: 1rem; }
+        .checkout-form label { font-size: 0.9rem; font-weight: 600; color: #374151; }
+        .checkout-form input, .checkout-form select { width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.95rem; }
+        .checkout-form input:focus, .checkout-form select:focus { outline: none; border-color: #2563eb; }
+
         .checkout-btn { background-color: #16a34a; color: white; border: none; padding: 0.8rem; width: 100%; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         .checkout-btn:hover { background-color: #15803d; }
 
@@ -70,6 +77,28 @@
             </div>
             <div id="cart-items"></div>
             <div class="cart-total">Total: R$ <span id="cart-total">0,00</span></div>
+
+            <!-- Dados do Cliente -->
+            <div class="checkout-form">
+                <div>
+                    <label for="customer-name">Seu Nome *</label>
+                    <input type="text" id="customer-name" placeholder="Ex: João Silva">
+                </div>
+                <div>
+                    <label for="customer-address">Endereço de Entrega *</label>
+                    <input type="text" id="customer-address" placeholder="Rua, número, bairro e complemento">
+                </div>
+                <div>
+                    <label for="payment-method">Forma de Pagamento</label>
+                    <select id="payment-method">
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                    </select>
+                </div>
+            </div>
+
             <button class="checkout-btn" onclick="checkoutWhatsApp()">Finalizar Pedido no WhatsApp</button>
         </div>
     </div>
@@ -80,7 +109,7 @@
 
     <script>
         // 1. CONFIGURE SEU NÚMERO DE WHATSAPP AQUI (Apenas números, com DDI e DDD)
-        const WHATSAPP_NUMBER = "5543984817218";
+        const WHATSAPP_NUMBER = "5543999999999";
 
         // 2. CADASTRE SEUS PRODUTOS AQUI (Substitua "img" por URLs diretas de imagens)
         const products = [
@@ -149,19 +178,24 @@
         function checkoutWhatsApp() {
             if (cart.length === 0) return alert("Adicione produtos ao carrinho primeiro!");
 
+            const name = document.getElementById('customer-name').value.trim();
+            const address = document.getElementById('customer-address').value.trim();
+            const payment = document.getElementById('payment-method').value;
+
+            if (!name || !address) {
+                return alert("Por favor, preencha seu nome e endereço de entrega.");
+            }
+
             let message = "Olá! Gostaria de fazer o seguinte pedido:\n\n";
+            message += "*Itens do Pedido:*\n";
             cart.forEach(item => {
                 message += `- ${item.name}: R$ ${formatBRL(item.price)}\n`;
             });
 
             const total = cart.reduce((sum, item) => sum + item.price, 0);
-            message += `\n*Total: R$ ${formatBRL(total)}*`;
-
-            const url = `https://wa.me{WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-            window.location.href = url;
-        }
-
-        renderProducts();
-    </script>
-</body>
-</html>
+            message += `\n*Total: R$ ${formatBRL(total)}*\n\n`;
+            message += `*Dados para Entrega:*\n`;
+            message += `• *Nome:* ${name}\n`;
+            message += `• *Endereço:* ${address}\n`;
+            message += `• *Pagamento:* ${payment}`;
+            
